@@ -10,7 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Libro {
+public class Libro { 
+    /**  Entidad Libro genera con id, titulo, autor, isbn(numero de serie de libro)
+     *  año de publicación y la cantidad   */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

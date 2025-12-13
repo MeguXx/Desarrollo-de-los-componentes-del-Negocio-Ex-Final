@@ -9,9 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+    
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios")   
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,9 +38,9 @@ public class Usuario implements UserDetails {
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
-    private Set<Rol> roles;
+    private Set<Rol> roles; 
 
-    @Override
+    @Override // detalle de los roles del usuario
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
                 .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getNombre()))

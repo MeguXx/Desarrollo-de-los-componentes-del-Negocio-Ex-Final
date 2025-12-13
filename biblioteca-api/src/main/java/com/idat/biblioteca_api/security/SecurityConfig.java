@@ -20,13 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // IMPORTANTE: Esto habilita el uso de @PreAuthorize en tus controladores
+@EnableMethodSecurity 
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     
-    // CORRECCIÓN: Usamos la Interfaz, no la clase concreta. 
     // Spring buscará automáticamente tu JpaUserDetailsService.
     private final UserDetailsService userDetailsService; 
 
@@ -35,9 +34,16 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(req -> req
-            .requestMatchers("/api/auth/**").permitAll()
-            .anyRequest().authenticated()
-        )
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                
+
+                .requestMatchers("/api/auth/**").permitAll()
+
+                
+                .requestMatchers("/api/libros/**").permitAll() 
+                .requestMatchers("/api/users/**").permitAll()
+                .anyRequest().authenticated()
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

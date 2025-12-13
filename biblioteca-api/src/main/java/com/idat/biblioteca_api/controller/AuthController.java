@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @RestController
@@ -28,6 +29,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    // --- MÉTODO REGISTER ---
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
 
@@ -35,16 +37,27 @@ public class AuthController {
             return ResponseEntity.badRequest().body("El username ya existe");
         }
 
-        Rol rolUsuario = rolRepository.findByNombre("USUARIO")
-                .orElseGet(() -> rolRepository.save(
-                        Rol.builder().nombre("USUARIO").build()
-                ));
+        Set<Rol> rolesAsignados = new HashSet<>();
+
+        if (request.getRoles() == null || request.getRoles().isEmpty()) {
+            // Si no manda nada, le asignamos USUARIO por defecto
+            Rol rolUsuario = rolRepository.findByNombre("USUARIO")
+                    .orElseGet(() -> rolRepository.save(Rol.builder().nombre("USUARIO").build()));
+            rolesAsignados.add(rolUsuario);
+        } else {
+            request.getRoles().forEach(rolNombre -> {
+                String nombreRol = rolNombre.toUpperCase();
+                Rol rol = rolRepository.findByNombre(nombreRol)
+                        .orElseGet(() -> rolRepository.save(Rol.builder().nombre(nombreRol).build()));
+                rolesAsignados.add(rol);
+            });
+        }
 
         Usuario usuario = Usuario.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nombreCompleto(request.getNombreCompleto())
-                .roles(Set.of(rolUsuario))
+                .roles(rolesAsignados)
                 .build();
 
         usuarioRepository.save(usuario);
@@ -55,19 +68,23 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
+    // --- MÉTODO LOGIN ---
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-
-        var authToken = new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
-                request.getPassword()
+        
+        // 1. Autenticar con Spring Security
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
         );
 
-        authenticationManager.authenticate(authToken);
-
+        // 2. Buscar usuario
         var userDetails = usuarioRepository.findByUsername(request.getUsername())
                 .orElseThrow();
 
+        // 3. Generar token
         String token = jwtService.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(token));

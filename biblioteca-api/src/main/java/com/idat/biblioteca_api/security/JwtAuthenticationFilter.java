@@ -20,7 +20,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    // CORRECCIÓN: Usamos la interfaz UserDetailsService
+    // Usamos la interfaz UserDetailsService
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        // Aquí extraemos el usuario. Si el token está mal formado, saltará error, 
+        // Aquí extraemos el usuario si el token está mal escrito o es inválido saldrá error, 
         // pero eso es normal en seguridad.
         username = jwtService.extractUsername(jwt);
 

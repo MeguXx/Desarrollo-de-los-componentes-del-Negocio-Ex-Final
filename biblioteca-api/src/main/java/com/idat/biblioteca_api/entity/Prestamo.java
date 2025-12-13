@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Prestamo {
-
+ /**  Cada que se registra un prestamo debe d aparecer ID, Usuario, Libro y la fecha, y el estado si fue devuelto o no   */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
